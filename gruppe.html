@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verlagsduell</title>
+<style>
+@font-face{font-family:'Hand';src:url(assets/hand.ttf)}@font-face{font-family:'Hand';font-weight:bold;src:url(assets/hand-bold.ttf)}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:Georgia,'DejaVu Serif',serif;color:#222;background:#222;overflow:hidden}
+#desk{position:fixed;inset:0;background-size:cover;background-position:center;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:12px;padding:8px 12px;background:rgba(20,12,6,.72);color:#f3e7cf;font-size:16px;z-index:5}
+.bar b{font-size:17px}.sp{flex:1}#timer{font-size:22px;font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+.btn{background:#7a2e1d;color:#fff;border:0;border-radius:6px;padding:12px 18px;font-size:18px;min-height:48px;box-shadow:0 3px 6px #0006}
+.btn.alt{background:#2d4a3a}.btn.grey{background:#555}.btn:disabled{opacity:.4}
+.kontor{background:#f3ead2;color:#222;border:2px solid #8a6d3b;border-radius:6px;padding:4px 10px;font-size:15px;line-height:1.25;cursor:pointer;text-align:left}
+#main{flex:1;overflow:auto;padding:14px;display:flex;justify-content:center;transition:padding .2s}
+body.ro #main{padding-right:min(49vw,560px);justify-content:flex-start}
+#paper{width:100%;max-width:820px;background-size:cover;padding:24px 28px 28px;box-shadow:0 8px 24px rgba(0,0,0,.55);font-size:19px;line-height:1.5;position:relative;align-self:flex-start;margin-bottom:100px}
+#paper h2{margin:0 0 6px;font-size:21px}.hint{font-size:15px;color:#6a1f14;margin:0 0 12px;font-style:italic}
+.chip{border-bottom:2px dotted #444}.chip.click{cursor:pointer;background:rgba(255,226,60,.5);border-radius:3px;padding:0 2px;border-bottom:0}.chip.fixed{background:rgba(70,170,90,.4)}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.small{font-size:15px;color:#3a3a3a}
+.sheet{border:1.5px solid rgba(40,30,20,.55);border-radius:2px;background:rgba(60,40,10,.07);padding:12px 14px;margin-top:14px;cursor:pointer;box-shadow:1px 3px 6px rgba(0,0,0,.28);transform:rotate(var(--r,0deg));position:relative}
+.sheet.sel{outline:4px solid #b3261e;outline-offset:2px}.sheet.sel:after{content:"GEWÄHLT";position:absolute;right:8px;top:-10px;background:#b3261e;color:#fff;font-size:12px;padding:2px 8px;letter-spacing:1px;font-family:Georgia,serif}
+.postit{font-family:'Hand','Bradley Hand','Marker Felt','Segoe Print',cursive;font-size:17px;color:#222;border:0;padding:12px 14px 14px;min-width:120px;max-width:280px;text-align:left;line-height:1.25;box-shadow:2px 5px 8px rgba(0,0,0,.42);transform:rotate(var(--r,0deg));transition:transform .12s,box-shadow .12s;position:relative}
+.postit:before{content:"";position:absolute;left:0;right:0;top:0;height:7px;background:rgba(0,0,0,.07)}
+.postit.c0{background:#ffe97a}.postit.c1{background:#ffb8cb}.postit.c2{background:#b9ee9f}.postit.c3{background:#a8d8ff}.postit.c4{background:#ffcf8a}
+.postit.sel{transform:rotate(0deg) translateY(-6px) scale(1.06);box-shadow:4px 12px 16px rgba(0,0,0,.5);outline:3px solid #7a2e1d}
+.slot{min-width:210px;min-height:62px;border:2.5px dashed rgba(40,25,10,.6);border-radius:4px;display:flex;align-items:center;justify-content:center;padding:4px;cursor:pointer;color:rgba(40,25,10,.6);font-size:15px;font-family:'Hand','Bradley Hand',cursive}
+.slot.over{background:rgba(255,230,120,.25)}.slot .postit{min-width:190px}
+.pool{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;padding:12px;border-top:2px solid rgba(40,25,10,.35)}
+.line{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:12px}.line b{flex:1;min-width:200px}
+.dock{position:fixed;left:12px;bottom:12px;display:flex;align-items:flex-end;gap:10px;z-index:9;cursor:pointer}
+.dock img.fld{height:84px;filter:drop-shadow(0 4px 6px #000a);transform:rotate(-4deg)}
+.dock .lbl{background:#000a;color:#fff;padding:3px 8px;border-radius:4px;font-size:14px}
+.pen{position:fixed;left:210px;bottom:8px;width:210px;opacity:.95;pointer-events:none;z-index:6;filter:drop-shadow(0 4px 5px #0009);transform:rotate(-3deg)}
+#rech{position:fixed;right:14px;top:58px;bottom:14px;width:min(47vw,540px);background-size:cover;box-shadow:0 10px 28px rgba(0,0,0,.7);transform:rotate(1.4deg);z-index:8;display:none;overflow:hidden}
+body.ro #rech{display:block}
+.overlay{position:fixed;inset:0;background:rgba(10,6,2,.82);z-index:20;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.on{display:flex}.box{background:#f1e8cf;border-radius:4px;padding:22px;max-width:660px;width:100%;max-height:92vh;overflow:auto;font-size:18px;line-height:1.45;box-shadow:0 10px 30px #000}
+.box h2{margin-top:0}.stamp{font-size:30px;font-weight:bold;border:4px solid;padding:4px 14px;display:inline-block;transform:rotate(-6deg);margin-bottom:10px}
+.ok{color:#1f7a3a}.no{color:#b3261e}
+.opt{background:transparent;border:2px solid #4a3a28;border-radius:4px;padding:9px 12px;font-size:17px}.opt.sel{background:#ffe08a}
+table.k td{padding:3px 10px 3px 0;vertical-align:top}
+.urk{border:6px double #9a7b2e;padding:20px 26px;text-align:center;background:rgba(255,250,230,.35)}
+.urk h2{font-size:34px;letter-spacing:6px;margin:0 0 4px;color:#6a4a10}.urk .nm{font-size:23px;margin:6px 0 10px}
+.urk h3{margin:14px 0 4px;font-size:18px;color:#6a1f14;text-transform:uppercase;letter-spacing:2px}.urk ul{text-align:left;margin:4px 0;padding-left:22px}.urk p.w{text-align:left;margin:4px 0}
+.film{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0}.fslot{border:2.5px dashed rgba(40,25,10,.6);border-radius:4px;min-height:92px;padding:5px;text-align:center;font-size:14px;cursor:pointer}.fslot .postit{min-width:0;width:100%;font-size:15px;padding:8px 8px 10px}
+.dock.zu{opacity:.35;cursor:not-allowed;filter:grayscale(.7)}
+#conn{position:fixed;right:10px;bottom:8px;z-index:30;font-size:13px;color:#fff;background:#000a;padding:2px 8px;border-radius:10px}
+input.t{font:inherit;font-size:22px;padding:8px 12px;border:2px solid #4a3a28;border-radius:4px;background:rgba(255,253,243,.8);text-transform:uppercase;width:150px;letter-spacing:6px;text-align:center}
+</style></head><body>
+<div id="desk">
+ <div class="bar"><div class="kontor" id="kontor" title="Verlagskontor"></div><div class="sp"></div><div id="stufe"></div><div class="sp"></div><div id="timer"></div></div>
+ <div id="main"><div id="paper"></div></div>
+</div>
+<div class="dock"><img class="fld" id="fld" alt="Ordner Recherche"><span class="lbl">Recherche</span></div>
+<img class="pen" id="pen" alt="">
+<div id="rech"></div>
+<div class="overlay" id="ov"><div class="box" id="ovbox"></div></div>
+<div id="conn"></div>
+<script src="assets/peerjs.min.js"></script><script src="ordner.js"></script><script src="recherche.js"></script><script src="texte.js"></script><script src="net.js"></script>
+<script>
+const $=id=>document.getElementById(id);const S=VD.STUFEN,TEXT=VD.TEXT;
+const FONT=["'Courier New',Courier,monospace","'Courier New',Courier,monospace","'Courier New',Courier,monospace","Georgia,serif","Georgia,'Palatino Linotype',serif"];
+const G={name:'',stufe:1,richtig:0,punkte:0,verlegt:0,verworfen:0,fehler:0,korr:0,gesamt:0,quote:0,schwelle:null,rang:0,ende:0,status:'lobby',dauer:60,sperreBis:0};
+let cur=null,ui={},conn=null,tok='',code='',pending=null,started=false,filmMode=false,filmUI={picks:[]},filmData=null,filmDone=false;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function chips(segs,mode,fixed){
+ return segs.map(s=>{if(s.t!==undefined)return esc(s.t);
+  const v=(fixed&&fixed[s.f]!==undefined)?fixed[s.f]:s.v;
+  const cls='chip'+(mode==='click'?' click':'')+((fixed&&fixed[s.f]!==undefined)?' fixed':'');
+  return `<span class="${cls}" data-f="${s.f}">${esc(v)}</span>`}).join('')}
+
+function esc(x){return String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function applyLook(){
+ const s=G.stufe;$('desk').style.backgroundImage=`url(assets/tisch_${s}.jpg)`;
+ $('paper').style.backgroundImage=`url(assets/papier_${s}.jpg)`;$('rech').style.backgroundImage=`url(assets/papier_${s}.jpg)`;$('ovbox').style.backgroundImage=`url(assets/papier_${s}.jpg)`;$('ovbox').style.backgroundSize='cover';$('paper').style.fontFamily=FONT[s-1];
+ $('fld').src=`assets/ordner_${s}.png`;$('pen').src=`assets/stift_${s}.png`;
+ $('stufe').innerHTML=`<b>${S[s-1]}</b> · Stufe ${s}`;
+ $('kontor').innerHTML=`<b>${esc(G.name)}</b><br>${S[s-1]} · ${G.verlegt} verlegt · ${G.verworfen} verworfen`}
+function overlay(html,lock){$('ovbox').innerHTML=html;$('ov').classList.add('on');if(lock)$('ov').dataset.lock='1';else delete $('ov').dataset.lock}
+
+function mirror(m){if(m.st)Object.assign(G,m.st);if(m.room){G.status=m.room.status;G.ende=Date.now()+m.room.rest;G.dauer=m.room.dauer}applyLook();if(window.REC)REC.setStufe(G.stufe)}
+function tick(){tickFilm();const rest=Math.max(0,Math.round((G.ende-Date.now())/1000));
+ $('timer').textContent=G.status==='run'?String(Math.floor(rest/60)).padStart(2,'0')+':'+String(rest%60).padStart(2,'0'):'';
+ const e=$('lockleft');if(e){const l=Math.max(0,Math.ceil((G.sperreBis-Date.now())/1000));e.textContent=l;if(l<=0&&$('ov').dataset.lock){$('ov').classList.remove('on');delete $('ov').dataset.lock;show()}}}
+function send(m){conn&&conn.send(m)}
+function startScreen(){
+ const A=["Raben","Eichen","Nordlicht","Silberfeder","Federkiel","Mondschein","Tintenfass","Sternenblatt","Kastanien","Leseblatt","Windrose","Bernstein"],Bn=["Verlag","Verlagshaus","Presse","Buchverlag","Verlagsgruppe","Edition"];
+ const gen=()=>{const n=[];while(n.length<8){const x=A[Math.floor(Math.random()*A.length)]+" "+Bn[Math.floor(Math.random()*Bn.length)];if(!n.includes(x))n.push(x)}return n};
+ let names=gen(),sel=names[0];const pre=(new URLSearchParams(location.search).get('raum')||'').toUpperCase();
+ let saved={};try{saved=JSON.parse(localStorage.getItem('vd-gruppe')||'{}')}catch(e){}
+ const draw=()=>{overlay(`<h2>Verlagsduell</h2><p>Gründet euren Verlag. Ihr arbeitet an einem Gerät, in eurem Tempo.</p>
+ <p><b>Raumcode</b> (steht auf dem Lehrerbildschirm)</p><div class="row"><input class="t" id="rc" maxlength="4" value="${esc(pre||saved.code||'')}"></div>
+ <p><b>Verlagsname</b></p><div class="row">${names.map(n=>`<button class="opt ${n===sel?'sel':''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')}<button class="opt" id="rn">neu würfeln</button></div>
+ <div class="row"><button class="btn" id="go">Verlag eröffnen</button></div><p class="small" id="msg"></p>`);
+  $('ovbox').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{sel=b.dataset.n;const v=$('rc').value;draw();$('rc').value=v});
+  $('rn').onclick=()=>{const v=$('rc').value;names=gen();sel=names[0];draw();$('rc').value=v};
+  $('go').onclick=()=>{code=$('rc').value.trim().toUpperCase();if(code.length!==4){$('msg').textContent='Bitte den vierstelligen Raumcode eintragen.';return}
+   let t=null;try{const sv=JSON.parse(localStorage.getItem('vd-gruppe')||'{}');if(sv.code===code)t=sv.tok}catch(e){}
+   tok=t||('g'+Math.random().toString(36).slice(2,10));G.name=sel;try{localStorage.setItem('vd-gruppe',JSON.stringify({code,tok,name:sel}))}catch(e){}
+   $('msg').textContent='Verbinde …';verbinde()}};
+ draw()}
+function verbinde(){
+ conn=Net.join(code,tok,{onOpen:()=>{$('conn').textContent='verbunden';send({t:'hello',name:G.name})},onClose:()=>{$('conn').textContent='Verbindung unterbrochen …'},onError:()=>{$('conn').textContent='keine Verbindung'},onMsg:handle});
+ setInterval(()=>send({t:'ping'}),3000);setInterval(tick,500)}
+function wartescreen(){overlay(`<h2>${esc(G.name)}</h2><p>Euer Verlag ist angemeldet. Die Lehrkraft startet gleich die Runde.</p><p class="small">Spieldauer: ${G.dauer} Minuten</p>`);$('ov').dataset.wait='1'}
+function filmSync(m){if(!m.film)return;
+ if(m.film.status!=='run'&&filmMode){filmExit();return}
+ if(m.film.run&&!filmMode){filmEnter();G.filmEnde=Date.now()+m.film.rest;send({t:'filmnext'})}}
+function filmEnter(){filmMode=true;filmDone=false;document.body.classList.remove('ro');document.querySelector('.dock').classList.add('zu');document.querySelector('.dock .lbl').textContent='Ordner geschlossen';$('ov').classList.remove('on')}
+function filmExit(){filmMode=false;filmDone=false;document.querySelector('.dock').classList.remove('zu');document.querySelector('.dock .lbl').textContent='Recherche';$('ov').classList.remove('on');pending=null;show()}
+function filmFarbe(){return 0}
+function drawFilm(){const m=filmData,p=$('paper'),P=filmUI.picks;
+ let h=`<h2>Filmanfrage ${m.n+1} von ${m.total} <span class="small" id="frest"></span></h2>
+ <p>Ein Filmteam möchte einen Film zum Motiv <b>${esc(m.motiv.name)}</b>.<br><span class="small">${esc(m.motiv.text)}</span></p>
+ <p class="small">${VD.TEXT.film}</p>
+ <div class="film f5">${m.slots.map((s,i)=>`<div class="fslot ${P[i]!==undefined?'full':''}" data-fs="${i}"><small>${esc(s.label)}</small><div>${P[i]!==undefined?pi('f|'+i,P[i]):'…'}</div></div>`).join('')}</div>`;
+ const first=[0,1,2].find(i=>P[i]===undefined);
+ if(first!==undefined){const s=m.slots[first];h+=`<p class="small"><b>${esc(s.label)} wählen:</b></p><div class="pool">${s.opts.map(o=>pi('c|'+first+'|'+o,o)).join('')}</div>`}
+ else{[3,4].forEach(i=>{if(P[i]===undefined){const s=m.slots[i];h+=`<p class="small"><b>${esc(s.label)} wählen:</b></p><div class="pool">${s.opts.map(o=>pi('c|'+i+'|'+o,o)).join('')}</div>`}});
+  if(P[3]!==undefined&&P[4]!==undefined)h+=`<div class="row"><button class="btn" id="fsub">Film einreichen</button></div>`}
+ p.innerHTML=h;
+ p.querySelectorAll('[data-pi^="c|"]').forEach(e=>e.onclick=()=>{const [,i,...v]=e.dataset.pi.split('|');P[+i]=v.join('|');drawFilm()});
+ p.querySelectorAll('.fslot.full').forEach(e=>e.onclick=()=>{const i=+e.dataset.fs;if(i<3){P.length=i}else{P[i]=undefined}drawFilm()});
+ if($('fsub'))$('fsub').onclick=()=>{send({t:'filmanswer',n:m.n,picks:P.map(String)});$('fsub').disabled=true};
+ tickFilm()}
+function tickFilm(){const e=$('frest');if(e&&filmMode){const r=Math.max(0,Math.round((G.filmEnde-Date.now())/1000));e.textContent='· noch '+Math.floor(r/60)+':'+String(r%60).padStart(2,'0')+' Min.'}}
+function handle(m){
+ filmSync(m);
+ if(m.t==='film'){mirror(m);G.filmEnde=Date.now()+m.rest;if(!filmMode)filmEnter();filmData=m;filmUI={picks:[]};applyLook();drawFilm();return}
+ if(m.t==='filmresult'){mirror(m);overlay(`<div class="stamp ${m.lv>=2?'ok':'no'}">${esc(m.name.toUpperCase())}</div><p>${m.hits} von 4 Angaben passen zur gewählten Hauptfigur.${m.motivOk?'':' Das Filmteam hat ein anderes Motiv erwartet.'}</p><p><b>+${m.pt} Punkt${m.pt===1?'':'e'}</b></p>`);setTimeout(()=>{$('ov').classList.remove('on');send({t:'filmnext'})},2400);return}
+ if(m.t==='filmend'){mirror(m);filmDone=true;$('ov').classList.remove('on');$('paper').innerHTML=`<h2>Filmrunde</h2><p>Alle ${m.total} Anfragen sind bearbeitet. Erfolgreiche Filme (Publikumserfolg oder Kassenschlager): <b>${m.erfolg}</b> von ${m.total}, zusammen <b>${m.punkte}</b> Punkte.</p><p class="small">Wartet kurz, bis alle anderen Verlage fertig sind. Danach geht es mit eurer Aufgabe weiter.</p>`;return}
+ if(m.t==='unknown'){send({t:'hello',name:G.name});return}
+ if(m.t==='welcome'){mirror(m);if(G.status==='lobby'){wartescreen()}else if(G.status==='run'){started=true;if(m.film&&m.film.run){}else G.gesamt>0?show():urkunde(G.stufe,true)}else{started='ende';ende()}return}
+ if(m.t==='pong'){mirror(m);
+  if(G.status==='run'&&!started){started=true;delete $('ov').dataset.wait;urkunde(1,true)}
+  if(G.status==='ende'&&started!=='ende'){started='ende';ende()}
+  if(pending&&G.status==='run'&&!filmMode){pending=null;show()}return}
+ if(m.t==='task'){mirror(m);pending=null;cur=m.task;ui={};$('ov').classList.remove('on');render();return}
+ if(m.t==='sperre'){mirror(m);G.sperreBis=Date.now()+m.sek*1000;overlay(`<div class="stamp no">GEGENDARSTELLUNG</div><p>Eure Presse ruht noch <b id="lockleft">${m.sek}</b> Sekunden.</p>`,true);return}
+ if(m.t==='result'){mirror(m);pending=null;ergebnis(m)}}
+function show(){if(G.status!=='run')return;applyLook();send({t:'next'})}
+function urkunde(s,first){
+ const u=VD.URKUNDE[s-1],typ={1:'verlegen',2:'exposes',3:'korrektur',4:'zuordnung',5:'gutachten'}[s];
+ let extra=`<p class="w">${TEXT[typ]}</p>`;
+ if(s===4)extra+=`<p class="w">Neu in dieser Stufe: ${TEXT.motiv}</p>`;
+ if(s===5)extra=`<p class="w">Im Wechsel erwarten euch drei Aufgaben:</p><ul><li>${TEXT.gutachten}</li><li>${TEXT.fehlerfrei}</li><li>${TEXT.motiv}</li></ul>`;
+ applyLook();
+ overlay(`<div class="urk"><h2>URKUNDE</h2><div>${first?'Gründung':'Beförderung'}</div><div class="nm"><b>${esc(G.name)}</b><br>${first?'eröffnet als':'ist jetzt'} <b>${S[s-1]}</b></div>
+ <h3>Das ist jetzt neu</h3><ul>${u.neu.map(x=>`<li>${x}</li>`).join('')}</ul>${extra}
+ <h3>Warum das für euren Verlag wichtig ist</h3><p class="w">${u.warum}</p>
+ <p class="small">${s<=2?'Tipp: Im Ordner steht der passende Eintrag. ':'Hier gibt es keine Tipps mehr. '}Ein Fehler kostet eine Gegendarstellung: ${VD.SPERRE[s-1]} Sekunden Sperre und Punkteabzug.</p>
+ ${G.schwelle?`<p class="small">Bis zur nächsten Beförderung: ${G.schwelle} richtige Entscheidungen.</p>`:'<p class="small">Das ist die höchste Stufe. Jetzt zählen Punkte und Ansehen.</p>'}
+ <div class="row" style="justify-content:center"><button class="btn" id="ok">Los geht's</button></div></div>`);
+ $('ok').onclick=()=>{$('ov').classList.remove('on');show()}}
+function entscheide(d){pending={t:'answer',id:cur.id,d,fix:ui.fix||{}};send(pending);busy()}
+function abgabe(){const t=cur,m={t:'answer',id:t.id};
+ if(t.typ==='exposes'||t.typ==='fehlerfrei')m.pick=ui.pick;
+ else if(t.typ==='zuordnung'||t.typ==='motiv')m.pl=ui.pl||{};
+ else if(t.typ==='gutachten')m.g=ui.g||{};
+ pending=m;send(m);busy()}
+function busy(){$('paper').style.opacity=.6;setTimeout(()=>{$('paper').style.opacity=1;if(pending)send(pending)},5000)}
+function ergebnis(r){$('paper').style.opacity=1;
+ if(r.ok){
+  if(r.aufstieg){urkunde(r.aufstieg,false);return}
+  overlay(`<div class="stamp ok">${r.d==='verwerfen'?'VERWORFEN':'VERLEGT'}</div><p>Richtig entschieden.</p><div class="row"><button class="btn" id="nx">Nächster Klappentext</button></div>`);
+  $('nx').onclick=()=>{$('ov').classList.remove('on');show()};setTimeout(()=>{if($('nx')&&$('ov').classList.contains('on')){$('ov').classList.remove('on');show()}},1300)}
+ else{G.sperreBis=Date.now()+r.sperre*1000;
+  overlay(`<div class="stamp no">RÜCKRUF</div><p>Die Entscheidung war falsch. Ihr müsst eine Gegendarstellung drucken. Eure Presse ruht <b id="lockleft">${r.sperre}</b> Sekunden.</p><p><b>Abzug: −${r.abz} Punkt${r.abz>1?'e':''}</b>${r.fk?` (davon ${r.fk} für falsche Richtigstellung${r.fk>1?'en':''})`:''}</p>${r.warum?`<p><b>Richtig wäre:</b><br>${r.warum}</p>`:`<p class="small">Schaut im Archiv nach: „${esc(cur.titel||'')}“.</p>`}`,true)}}
+function ende(){overlay(`<h2>Die Zeit ist um</h2><p>Euer Verlag <b>${esc(G.name)}</b> steht im ${S[G.stufe-1]} (Stufe ${G.stufe}) auf Platz <b>${G.rang}</b> der Bestsellerliste.</p><table class="k"><tr><td>Verlegt</td><td>${G.verlegt}</td></tr><tr><td>Verworfen</td><td>${G.verworfen}</td></tr><tr><td>Rückrufe</td><td>${G.fehler}</td></tr><tr><td>Falsche Richtigstellungen</td><td>${G.korr}</td></tr><tr><td>Erfolgreiche Filme</td><td>${G.filme||0}</td></tr><tr><td>Punkte</td><td><b>${G.punkte}</b></td></tr><tr><td>Trefferquote</td><td>${G.quote} %</td></tr></table>`)}
+$('kontor').onclick=()=>{const rest=Math.max(0,Math.round((G.ende-Date.now())/60000));overlay(`<h2>Verlagskontor</h2><table class="k"><tr><td>Verlag</td><td><b>${esc(G.name)}</b></td></tr><tr><td>Rang</td><td>${S[G.stufe-1]} (Stufe ${G.stufe}), Platz ${G.rang}</td></tr><tr><td>Verlegt</td><td>${G.verlegt}</td></tr><tr><td>Verworfen</td><td>${G.verworfen}</td></tr><tr><td>Rückrufe</td><td>${G.fehler}</td></tr><tr><td>Falsche Richtigstellungen</td><td>${G.korr}</td></tr><tr><td>Erfolgreiche Filme</td><td>${G.filme||0}</td></tr><tr><td>Punkte</td><td><b>${G.punkte}</b></td></tr><tr><td>Bis zur Beförderung</td><td>${G.schwelle?(G.schwelle-G.richtig)+' richtige Entscheidungen':'höchste Stufe'}</td></tr><tr><td>Zweites Gerät</td><td class="small">${esc(location.href.replace(/[^/]*$/,'')+'recherche.html?raum='+code+'&g='+tok)}</td></tr><tr><td>Restzeit</td><td>${rest} Minuten</td></tr></table><div class="row"><button class="btn grey" id="cl">Schließen</button></div>`);$('cl').onclick=()=>$('ov').classList.remove('on')};
+function openOrdner(){if(filmMode)return;document.body.classList.toggle('ro')}
+function hash(x){let h=0;String(x).split('').forEach(c=>h=(h*31+c.charCodeAt(0))|0);return Math.abs(h)}
+function pi(id,txt,x){const r=((hash(id)%7)-3)*.9;return `<button class="postit c${hash(id+'c')%5} ${x||''}" data-pi="${esc(id)}" style="--r:${r}deg">${esc(txt)}</button>`}
+function sheet(attr,html,sel,i){return `<div class="sheet ${sel?'sel':''}" ${attr} style="--r:${(i%2?.5:-.5)}deg">${html}</div>`}
+function render(){
+ const t=cur,p=$('paper');let h=`<h2>${esc(t.titel||'')}</h2>`;
+ if(t.hinweis&&G.stufe<=2)h+=`<p class="hint">${esc(t.hinweis)} <button class="opt" id="hin" style="font-size:14px;padding:3px 8px">im Archiv öffnen</button></p>`;
+ if(t.typ==='verlegen'){h+=`<div>${chips(t.segs)}</div>${btns()}`}
+ else if(t.typ==='exposes'){h+=`<p class="small">Welcher Klappentext stimmt?</p>`+['A','B'].map((k,i)=>sheet(`data-p="${k}"`,`<b>Klappentext ${k}</b><br>${esc(t[k])}`,ui.pick===k,i)).join('')+`<div class="row"><button class="btn" id="sub" ${ui.pick?'':'disabled'}>Dieses Buch verlegen</button></div>`}
+ else if(t.typ==='korrektur'){ui.fix=ui.fix||{};h+=`<div>${chips(t.segs,'click',ui.fix)}</div>`;
+  if(ui.menu){const opts=t.opts[ui.menu];
+   h+=`<p class="small">Welche Angabe soll dort stehen? (${lab(ui.menu)})</p><div class="pool">${opts.map(o=>pi('o|'+o,o)).join('')}${ui.fix[ui.menu]!==undefined?`<button class="opt" id="reset">zurücksetzen</button>`:''}</div>`}
+  h+=btns()}
+ else if(t.typ==='zuordnung'){ui.pl=ui.pl||{};ui.sel=ui.sel||null;h+=`<div>${chips(t.segs)}</div><p class="small">Ordnet jede Angabe dem richtigen Buch zu: Zettel antippen, dann das Buch antippen.</p>`+
+  t.buecher.map(b=>`<div class="line"><b>${esc(b.titel)}</b><div class="slot" data-slot="${b.k}">${ui.pl[b.k]!==undefined?pi('s|'+ui.pl[b.k],t.stuecke[ui.pl[b.k]].v):'hier ablegen'}</div></div>`).join('')+
+  `<div class="pool">${t.stuecke.map((x,i)=>Object.values(ui.pl).includes(i)?'':pi('s|'+i,x.v)).join('')}</div><div class="row"><button class="btn" id="sub">Zuordnung einreichen</button></div>`}
+ else if(t.typ==='motiv'){ui.pl=ui.pl||{};h+=`<p class="small">Welches Motiv ist das Hauptmotiv? Zettel antippen, dann das Werk antippen.</p>`+
+  t.buecher.map(b=>`<div class="line"><b>${esc(b.titel)} <span class="small">(${esc(b.autor)})</span></b><div class="slot" data-slot="${b.k}">${ui.pl[b.k]!==undefined?pi('m|'+ui.pl[b.k],t.motive.find(m=>m.id===ui.pl[b.k]).name):'hier ablegen'}</div></div>`).join('')+
+  `<div class="pool">${t.motive.map(m=>Object.values(ui.pl).includes(m.id)?'':pi('m|'+m.id,m.name)).join('')}</div><div class="row"><button class="btn" id="sub">Zuordnung einreichen</button></div>`}
+ else if(t.typ==='gutachten'){ui.g=ui.g||{};h+=`<div>${chips(t.segs)}</div><p class="small">Gutachten: Tippt auf eine Angabe, die ihr für falsch haltet, und wählt die richtige.</p>`+t.teile.map((x,i)=>{const on=ui.g[i]!==undefined;return sheet(`data-g="${i}"`,`<b>${lab(x.f)}:</b> ${esc(x.gezeigt)} ${on?'<span class="no">– beanstandet</span>':''}`,on,i)+(on?`<div class="pool" style="margin-top:6px">${x.opts.map(o=>pi('g|'+i+'|'+o,o,ui.g[i]===o?'sel':'')).join('')}</div>`:'')}).join('')+`<div class="row"><button class="btn" id="sub">Gutachten einreichen</button></div>`}
+ else if(t.typ==='fehlerfrei'){h+=`<p class="small">Welcher Klappentext ist fehlerfrei?</p>`+t.kts.map((k,i)=>sheet(`data-p="${i}"`,esc(k.kt),ui.pick===i,i)).join('')+`<div class="row"><button class="btn" id="sub" ${ui.pick!==undefined?'':'disabled'}>Diesen Klappentext verlegen</button></div>`}
+ p.innerHTML=h;bind()}
+function lab(f){return {fig:'Hauptfigur',ort:'Ort',geg:'Gegenspieler',j:'Erscheinungsjahr',a:'Autor/in'}[f]||f}
+function btns(){return `<div class="row"><button class="btn alt" id="verlegen">Verlegen</button><button class="btn" id="verwerfen">Verwerfen</button></div>`}
+function bind(){
+ const t=cur,Q=s=>document.querySelectorAll(s);
+ if($('verlegen'))$('verlegen').onclick=()=>entscheide('verlegen');
+ if($('verwerfen'))$('verwerfen').onclick=()=>entscheide('verwerfen');
+ if($('hin'))$('hin').onclick=()=>{document.body.classList.add('ro');REC.open(t.buch)};
+ Q('[data-p]').forEach(e=>e.onclick=()=>{ui.pick=t.typ==='exposes'?e.dataset.p:+e.dataset.p;render()});
+ Q('.chip.click').forEach(e=>e.onclick=()=>{ui.menu=e.dataset.f;render()});
+ if($('reset'))$('reset').onclick=()=>{delete ui.fix[ui.menu];ui.menu=null;render()};
+ if(t.typ==='korrektur')Q('[data-pi]').forEach(e=>e.onclick=()=>{ui.fix[ui.menu]=e.dataset.pi.slice(2);ui.menu=null;render()});
+ if(t.typ==='zuordnung'||t.typ==='motiv'){
+  Q('[data-pi]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const id=e.dataset.pi.slice(2);const inSlot=e.closest('.slot');
+   const val=t.typ==='zuordnung'?+id:id;
+   if(inSlot){delete ui.pl[inSlot.dataset.slot];ui.sel=null}else ui.sel=(ui.sel===val?null:val);render();if(ui.sel!==null&&ui.sel!==undefined)hl()});
+  Q('[data-slot]').forEach(e=>e.onclick=()=>{if(ui.sel===null||ui.sel===undefined)return;const k=e.dataset.slot;
+   for(const kk of Object.keys(ui.pl))if(ui.pl[kk]===ui.sel)delete ui.pl[kk];ui.pl[k]=ui.sel;ui.sel=null;render()});
+  if(ui.sel!==null&&ui.sel!==undefined)hl()}
+ if(t.typ==='gutachten'){
+  Q('[data-g]').forEach(e=>e.onclick=()=>{const i=+e.dataset.g;if(ui.g[i]!==undefined)delete ui.g[i];else ui.g[i]='';render()});
+  Q('[data-pi]').forEach(e=>e.onclick=()=>{const [,i,o]=e.dataset.pi.split('|');ui.g[+i]=o;render()})}
+ if($('sub'))$('sub').onclick=abgabe}
+function hl(){document.querySelectorAll('[data-slot]').forEach(e=>e.classList.add('over'));
+ document.querySelectorAll('.pool [data-pi]').forEach(e=>{const id=e.dataset.pi.slice(2);const v=cur.typ==='zuordnung'?+id:id;if(v===ui.sel)e.classList.add('sel')})}
+
+document.querySelector('.dock').onclick=openOrdner;window.REC=Recherche.mount($('rech'),1,{onClose:()=>document.body.classList.remove('ro')});
+$('desk').style.backgroundImage='url(assets/tisch_1.jpg)';$('paper').style.backgroundImage='url(assets/papier_1.jpg)';$('rech').style.backgroundImage='url(assets/papier_1.jpg)';$('fld').src='assets/ordner_1.png';$('pen').src='assets/stift_1.png';
+startScreen();
+</script></body></html>

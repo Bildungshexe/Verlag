@@ -1,0 +1,17 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recherche – Verlagsarchiv</title>
+<style>*{box-sizing:border-box}html,body{margin:0;height:100%}body{background:#222}#r{position:fixed;inset:0;background-size:cover}
+#bar{position:fixed;left:0;right:0;top:0;height:44px;display:flex;gap:8px;align-items:center;padding:0 10px;background:rgba(20,12,6,.8);color:#f3e7cf;font:15px Georgia,serif;z-index:5}
+#bar button{font:inherit;padding:4px 10px}#rr{position:fixed;left:10px;right:10px;top:52px;bottom:10px;background-size:cover;box-shadow:0 8px 24px #000a}</style></head>
+<body><div id="r"></div><div id="bar">Recherche für ein zweites Gerät · Stufe: <span id="bt"></span></div><div id="rr"></div>
+<div id="zu" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(10,6,2,.92);color:#f3e7cf;font:26px Georgia,serif;align-items:center;justify-content:center;text-align:center;padding:30px">Der Ordner ist gerade geschlossen.<br>Eine Filmanfrage läuft, hier wird aus dem Kopf gearbeitet.</div>
+<script src="assets/peerjs.min.js"></script><script src="ordner.js"></script><script src="recherche.js"></script><script src="net.js"></script><script>
+const s=Math.min(5,Math.max(1,+(new URLSearchParams(location.search).get('s')||1)));
+document.getElementById('r').style.backgroundImage=`url(assets/tisch_${s}.jpg)`;document.getElementById('rr').style.backgroundImage=`url(assets/papier_${s}.jpg)`;
+const bt=document.getElementById('bt');bt.innerHTML=[1,2,3,4,5].map(n=>`<button onclick="location.search='?s=${n}'" ${n===s?'disabled':''}>${n}</button>`).join(' ');
+const R=Recherche.mount(document.getElementById('rr'),s);
+const q=new URLSearchParams(location.search),raum=(q.get('raum')||'').toUpperCase(),grp=q.get('g');
+if(raum&&grp){const tok2='r'+Math.random().toString(36).slice(2,9);let c=null;
+ const ask=()=>c&&c.send({t:'archiv',grp});
+ c=Net.join(raum,tok2,{onOpen:ask,onMsg:m=>{if(m.t==='archiv'){document.getElementById('zu').style.display=m.zu?'flex':'none';if(m.stufe&&m.stufe!==s&&!m.zu){R.setStufe(m.stufe);document.getElementById('r').style.backgroundImage=`url(assets/tisch_${m.stufe}.jpg)`;document.getElementById('rr').style.backgroundImage=`url(assets/papier_${m.stufe}.jpg)`}}}});
+ setInterval(ask,3000)}
+</script></body></html>
